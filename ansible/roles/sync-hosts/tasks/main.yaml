@@ -1,0 +1,20 @@
+- name: 'Configure /etc/hosts for all LAB hosts'
+  blockinfile:
+    path: /etc/hosts
+    marker: "# LAB HOSTS"
+    block: |
+      192.168.56.10       k8s-00
+      192.168.56.11       k8s-01
+      192.168.56.12       k8s-02
+      192.168.56.13       k8s-03
+      192.168.56.20       infra-01
+      192.168.56.21       infra-02
+      192.168.56.22       infra-03
+      192.168.56.100      installer
+      
+- name: 'Delete unnecessary entries from /etc/hosts file'
+  lineinfile:
+    path: /etc/hosts
+    state: absent
+    regexp: '^127.0.1.1 infra'
+

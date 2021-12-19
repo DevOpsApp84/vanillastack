@@ -1,0 +1,158 @@
+---
+- sysctl:
+    name: "{{ item }}"
+    value: '1'
+    sysctl_file: /etc/sysctl.d/kubernetes.conf
+    reload: no
+  with_items:
+    - net.ipv6.conf.all.disable_ipv6
+    - net.ipv6.conf.default.disable_ipv6
+    - net.bridge.bridge-nf-call-iptables
+    - net.ipv4.ip_forward
+    - net.bridge.bridge-nf-call-ip6tables
+
+- name: 'Reload sysctl values'
+  command: 'sysctl --system'
+  register: status
+- debug: msg="{{ status.stdout }}"
+- debug: msg="{{ status.stderr }}"
+
+- name: 'Remove swapfile from /etc/fstab'
+  mount:
+    name: "{{ item }}"
+    fstype: swap
+    state: absent
+  with_items:
+    - swap
+    - none
+
+- name: 'Disable swap'
+  command: swapoff -a
+
+- name: 'Install prerequisite packages'
+  apt:
+    name: "{{ packages }}"
+    state: present
+    update_cache: yes
+  vars:
+    packages:
+    - lvm2
+    - curl
+    - net-tools
+    - git
+    - jq
+    - python-pip
+
+- name: 'Uninstall docker from distribution if was installed'
+  apt:
+    name:
+      - docker 
+      - docker-engine 
+      - docker.io 
+      - containerd 
+      - runc
+    state: absent
+
+- name: 'Install aptitude using apt'
+  apt: name=aptitude state=latest update_cache=yes force_apt_get=yes
+
+- name: 'Install required system packages'
+  apt: name={{ item }} state=latest update_cache=yes
+  loop: [ 'apt-transport-https', 'ca-certificates', 'curl', 'gnupg-agent', 'software-properties-common' ]
+
+- name: 'Add Docker GPG apt Key'
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: 'Add Docker Repository'
+  apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu bionic stable
+    state: present
+
+- name: 'Install docker and its dependecies'
+  apt:
+    name: "{{ packages }}"
+    state: present
+    update_cache: yes
+  vars:
+    packages:
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io
+
+- name: 'Add vagrant user to docker group'
+  user:
+    name: vagrant
+    group: docker
+
+- name: 'Enable service docker'
+  service:
+    name: docker
+    enabled: yes
+
+- name: 'Start service docker, if not started'
+  service:
+    name: docker
+    state: started
+
+- name: 'Create daemon.json docker custom config file'
+  file:
+    path: /etc/docker/daemon.json
+    state: touch
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: 'Add custom docker configuration block into daemon.json'
+  blockinfile:
+    path: /etc/docker/daemon.json
+    create: yes
+    owner: root
+    group: root
+    mode: '0600'
+    marker: ''
+    block: |
+       {
+         "exec-opts": ["native.cgroupdriver=systemd"],
+         "log-driver": "json-file",
+         "log-opts": {
+           "max-size": "100m"
+         },
+         "storage-driver": "overlay2",
+         "storage-opts": [
+         "overlay2.override_kernel_check=true"
+         ]
+       }
+
+- name: 'Docker config extra systemd directory'
+  file:
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+    mode: '0755'
+
+- name: 'Daemon reload new docker configuration'
+  systemd: daemon_reload=yes
+
+- name: 'Restart docker service'
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: docker
+
+- name: 'Install docker python modules'
+  pip:
+    name: docker
+
+- name: 'Pull Vanillastack image'
+  docker_image:
+    name: harbor.cloudical.net/vanillastack/installer:latest
+
+- name: 'Create Vanillastack installer'
+  docker_container:
+    name: vanillastack-installer
+    image: harbor.cloudical.net/vanillastack/installer
+    state: present
+    recreate: yes
+    exposed_ports:
+      - 8080

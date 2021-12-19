@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: true
+  gather_facts: no
+  tasks:
+    - name: 'Installer prerequisite'
+      import_role:
+        name: installer-prereq

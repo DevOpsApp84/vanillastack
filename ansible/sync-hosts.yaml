@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: true
+  gather_facts: no
+  tasks:
+    - name: 'Propagate hosts entries'
+      import_role:
+        name: sync-hosts

@@ -1,0 +1,16 @@
+[all:vars]
+ansible_user = root
+
+[K8S]
+k8s-00
+k8s-01
+k8s-02
+k8s-03
+
+[OPENSTACK]
+infra01
+infra02
+infra03
+
+[MANAGE]
+installer
