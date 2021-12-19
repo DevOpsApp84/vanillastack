@@ -13,13 +13,13 @@ PLAYBOOK_DIR = "/vagrant/ansible"
 ROLES_DIR = "/vagrant/ansible/roles"
 ANSIBLE_INVENTORY = "#{PLAYBOOK_DIR}" + '/inventory/hosts'
 
-IMAGE_NAME  = "bento/ubuntu-18.04"
+IMAGE_NAME  = "generic/ubuntu2004"
 
 lab = {
-  "k8s-00"    => { :osimage => IMAGE_NAME, :ip => "192.168.56.10",   :cpus => 2, :mem =>1800, :custom_host => "k8s-00.sh"    },
-  "k8s-01"    => { :osimage => IMAGE_NAME, :ip => "192.168.56.11",   :cpus => 2, :mem =>1800, :custom_host => "k8s-01.sh"    },
-  "k8s-02"    => { :osimage => IMAGE_NAME, :ip => "192.168.56.12",   :cpus => 2, :mem =>1800, :custom_host => "k8s-02.sh"    },
-  "k8s-03"    => { :osimage => IMAGE_NAME, :ip => "192.168.56.13",   :cpus => 2, :mem =>1800, :custom_host => "k8s-03.sh"    },
+  "k8s-00"    => { :osimage => IMAGE_NAME, :ip => "192.168.56.10",   :cpus => 2, :mem =>2048, :custom_host => "k8s-00.sh"    },
+  "k8s-01"    => { :osimage => IMAGE_NAME, :ip => "192.168.56.11",   :cpus => 2, :mem =>2048, :custom_host => "k8s-01.sh"    },
+  "k8s-02"    => { :osimage => IMAGE_NAME, :ip => "192.168.56.12",   :cpus => 2, :mem =>2048, :custom_host => "k8s-02.sh"    },
+  "k8s-03"    => { :osimage => IMAGE_NAME, :ip => "192.168.56.13",   :cpus => 2, :mem =>2048, :custom_host => "k8s-03.sh"    },
   "infra-00"  => { :osimage => IMAGE_NAME, :ip => "192.168.56.20",   :cpus => 2, :mem =>2048, :custom_host => "infra-00.sh"  },
   "infra-01"  => { :osimage => IMAGE_NAME, :ip => "192.168.56.21",   :cpus => 2, :mem =>2048, :custom_host => "infra-01.sh"  },
   "infra-02"  => { :osimage => IMAGE_NAME, :ip => "192.168.56.22",   :cpus => 2, :mem =>2048, :custom_host => "infra-02.sh"  },
